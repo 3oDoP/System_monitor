@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>System Monitoring Dashboard</h1>
+
+    <h2>RAM Usage</h2>
+    <canvas id="ramChart" width="700" height="100"></canvas>
+
+    <h2>CPU Usage</h2>
+    <canvas id="cpuChart" width="700" height="100"></canvas>
+
+    <h2>Disk Space Usage</h2>
+    <canvas id="diskChart" width="700" height="100"></canvas>
+
+    <script>
+        const ramCtx = document.getElementById('ramChart').getContext('2d');
+        const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+        const diskCtx = document.getElementById('diskChart').getContext('2d');
+
+        const createEmptyLabels = () => Array.from({ length: 60 }, (_, i) => `${i} мин`);
+
+        const ramChart = new Chart(ramCtx, {
+            type: 'line',
+            data: { labels: createEmptyLabels(), datasets: [{ label: 'RAM Usage (%)', data: [], borderColor: 'rgb(75, 192, 192)', tension: 0.1 }] },
+            options: { scales: { x: { title: { display: true, text: 'Время (минуты)' } }, y: { beginAtZero: true, max: 100 } } }
+        });
+
+        const cpuChart = new Chart(cpuCtx, {
+            type: 'line',
+            data: { labels: createEmptyLabels(), datasets: [{ label: 'CPU Usage (%)', data: [], borderColor: 'rgb(255, 99, 132)', tension: 0.1 }] },
+            options: { scales: { x: { title: { display: true, text: 'Время (минуты)' } }, y: { beginAtZero: true, max: 100 } } }
+        });
+
+        const diskChart = new Chart(diskCtx, {
+            type: 'line',
+            data: { labels: createEmptyLabels(), datasets: [{ label: 'Disk Space Usage (%)', data: [], borderColor: 'rgb(54, 162, 235)', tension: 0.1 }] },
+            options: { scales: { x: { title: { display: true, text: 'Время (минуты)' } }, y: { beginAtZero: true, max: 100 } } }
+        });
+
+        function fetchData(url, chart) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    chart.data.datasets[0].data = data;
+                    chart.update();
+                });
+        }
+
+        setInterval(() => {
+            fetchData('/ram_data', ramChart);
+            fetchData('/cpu_data', cpuChart);
+            fetchData('/disk_data', diskChart);
+        }, 1000);  // Милисекунды
+    </script>
+</body>
+</html>
